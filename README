@@ -87,18 +87,18 @@ COMPILING:
     bug reports, feature requests or any suggestions.
 
     To compile it, execute `make` and it shall compile the executable
-    "ar_test".
+    "artest".
 
 
 USAGE:
-    `./ar_test -h` for help.
+    `./artest -h` for help.
 
 
 EXAMPLE:
     Files "A.txt", "B.txt" and "C.txt" are examples of classifier evaluation
     files. The following command evaluates the classifiers A and B:
 
-    `./ar_test -a A.txt -b B.txt -t SAME`
+    `./artest -a A.txt -b B.txt -t SAME`
 
 
 TODO:
