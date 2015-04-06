@@ -8,8 +8,5 @@ all: artest
 artest: artest.c
 	$(CC) artest.c -o artest -pthread -lm $(CFLAGS)
 
-artest_pgo: artest.c
-	$(CC) artest.c -o artest -pthread -lm -pg $(CFLAGS)
-
 clean:
-	rm -f artest *.o
+	rm -f artest *.o *.gcda *.out
