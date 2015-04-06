@@ -1,0 +1,130 @@
+ABSTRACT:
+    Executing Approximate Randomization (AR) statistical significance tests
+    while measuring Area Under Curve (AUC) of Receiver Operating Characteristic
+    (ROC) curves of evaluated binary classifiers can be computationally
+    expensive and take an unpleasant amount of time when implemented using
+    scripting languages. For example, below is the total time a previous
+    implementation in Perl took to analyze two classifiers:
+
+        When AR's rounds R = 100:
+            real    2m44.748s
+            user    2m23.026s
+            sys	    0m0.066s
+
+        When AR's rounds R = 1000:
+            real    27m38.230s
+            user    23m20.713s
+            sys	    0m0.616s
+
+    This tool is identical to that except for being a multi-threaded
+    implementation in C. Below is the time it took to evaluate the same:
+
+        When AR's rounds R = 100 (using 1 thread):
+            real    0m0.373s
+            user    0m0.328s
+            sys     0m0.003s
+
+        When AR's rounds R = 100 (using 20 threads):
+            real    0m0.186s
+            user    0m0.391s
+            sys     0m0.001s
+
+        When AR's rounds R = 1000 (using 1 thread):
+            real    0m3.674s
+            user    0m3.214s
+            sys     0m0.000s
+
+        When AR's rounds R = 1000 (using 20 threads):
+            real    0m1.134s
+            user    0m3.269s
+            sys     0m0.003s
+
+    A good time saver (99.77% to 99.999% reduction in time).
+
+
+INTRODUCTION:
+    Let's say that you have evaluated two binary classifiers, A and B, after
+    which you obtained their output scores. Their output scores are saved in
+    files A.txt and B.txt and formatted as follows:
+        - Each binary problem that is classified is represented in a single
+          line. I.e. for n problems, there are n lines.
+
+        - Each line is composed of two parts that are separated by a single
+          space, namely: the score (a number in [0, 1]), and the true class of
+          the corresponding instance that is tested. Each line cannot be wider
+          than ANSLINE_WIDTH, which by default is 512 bytes at the time of
+          writing this.
+
+        - The score must follow the following semantics:
+            - It is always in the set [0, 1].
+            - Higher scores represent higher likelihood of class "target"
+              being positive.
+
+        - The class follow the following semantics:
+            - This is the true class (ground truth) for evaluation purposes.
+            - It can be any string as long as it is unique.
+            - Only two classes are permitted
+            - You should specify your target class as this affects how TPR/FPR
+              rates calculated. By default, the target class is `0`, but you
+              can set it to any string you want.
+
+    Once you ensure that your A.txt and B.txt files follow the format
+    specified above, then this tool provides the following:
+        - Measures the AUC of the ROC curve of classifiers A and B.
+        - Performs the AR statistical significance test by which the output is
+          the probability that the observed difference in ABS(AUC(A) - AUC(B))
+          could've happened due to random chance.
+
+    For details on how to tweak the parameters, read the section USAGE.
+
+
+COMPILING:
+    Runs on Linux. The only reason is due to the reliance on the function
+    random_r(3). Replacing that by a more portable one would allow it to run
+    on any POSIX operating system. Replacing PTHREADS would likely allow it to
+    run on Windows (however I am not sure about the Windows one as there might
+    be additional tweaks needed). Feel free to contact me should you have any
+    bug reports, feature requests or any suggestions.
+
+    To compile it, execute `make` and it shall compile the executable
+    "ar_test".
+
+
+USAGE:
+    `./ar_test -h` for help.
+
+
+EXAMPLE:
+    Files "A.txt", "B.txt" and "C.txt" are examples of classifier evaluation
+    files. The following command evaluates the classifiers A and B:
+
+    `./ar_test -a A.txt -b B.txt -t SAME`
+
+
+TODO:
+    - Remove the need for loading the involved files twice. This is not an
+      issue as it only happens once during the tool's startup. However,
+      removing it would be more elegant if it doesn't come with added
+      processing time during the run-time.
+
+    - Replace random_r(3) calls by a portable reentrant alternative.
+
+    - Revisit "if ((rresult % 2) == 0) {HEAD} else {TAIL}". I have tested this
+      empirically and is a fair coin with random_r(3). However, when
+      random_r(3) is replaced, this should be reconsidered.
+
+    - Reduce memory consumption. Currently this loads `(1 + THREADS) *
+      NUM_PROBLEMS` many copies of a each classifier evaluation.
+
+    - Revisit variable types and refactor the code.
+
+    - Implement argument -x.
+
+
+LICENSE:
+    This software is licensed under GPLv2. Read the accompanied LICENSE file
+    for details.
+
+
+AUTHOR:
+    m [ta] khonji [tod] org.
