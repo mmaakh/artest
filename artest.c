@@ -467,7 +467,8 @@ int main(int argc, char **argv) {
         times_null_true += targs[c].rcode;
     }
     long double p = (long double)times_null_true / R;
-    fprintf(stderr, " ok (p = %Lf)\n", p);
+    fprintf(stderr, " ok\n");
+    fprintf(stdout, "p = %Lf\n", p);
 
     /* free resources */
     free(ans_a);
